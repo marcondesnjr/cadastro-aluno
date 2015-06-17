@@ -6,6 +6,7 @@ import io.github.marcondesnjr.cadastroaluno.exceptions.PreexistingEntityExceptio
 import io.github.marcondesnjr.namevalidator.NameValidator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 /**
@@ -13,8 +14,6 @@ import javax.persistence.Persistence;
  * @author José Marcondes do Nascimento Junior
  */
 public class CadastrarAluno {
-    private static final AlunoJpaController alJpa =
-            new AlunoJpaController(Persistence.createEntityManagerFactory("io.github.marcondesnjr_cadastro-alunoPU"));
     
     public static void cadastrarNovo(Aluno al) throws AlunoInvalidoException{
         if(!NameValidator.isValid(al.getNome()))
@@ -35,19 +34,27 @@ public class CadastrarAluno {
         }catch(InvalidStateException ex){
             throw new AlunoInvalidoException("O aluno deve possuir um CPF válido");
         }
-        
+        EntityManagerFactory manager = Persistence.createEntityManagerFactory("io.github.marcondesnjr_cadastro-alunoPU");
+        AlunoJpaController alJpa = new AlunoJpaController(manager);
         try{
         alJpa.create(al);
+        manager.close();
         }catch(PreexistingEntityException ex){
+            manager.close();
             throw new AlunoInvalidoException("Este aluno já está cadastrado no sistema");
         } catch (Exception ex) {
+            manager.close();
             Logger.getLogger(CadastrarAluno.class.getName()).log(Level.SEVERE, null, ex);
             throw new AlunoInvalidoException("Ocorreu um erro no cadastro");
         }
     }
     
     public static Aluno localizaAluno(String cpf){
-        return alJpa.findAluno(cpf);
+        EntityManagerFactory manager = Persistence.createEntityManagerFactory("io.github.marcondesnjr_cadastro-alunoPU");
+        AlunoJpaController alJpa = new AlunoJpaController(manager);
+        Aluno result =  alJpa.findAluno(cpf);
+        manager.close();
+        return result;
     }
-    
+        
 }

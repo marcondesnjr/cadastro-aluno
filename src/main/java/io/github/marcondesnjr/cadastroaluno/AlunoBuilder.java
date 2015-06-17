@@ -26,8 +26,6 @@ public class AlunoBuilder {
     }
     
     public AlunoBuilder comDocMilitar(String doc) throws DocumentoException{
-        if(!temDocMili())
-            throw new DocumentoException("Este documento não se aplica á este aluno");
         this.docMilitar = doc;
         return this;
     }
